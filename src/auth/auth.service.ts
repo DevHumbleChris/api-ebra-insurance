@@ -1,12 +1,16 @@
+import { UserDTO } from './../dto/user.dto';
+import { PrismaService } from './../../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
+  constructor(private prisma: PrismaService) {}
   async signup() {
     return 'Signed up route';
   }
 
-  async signin() {
+  async signin(data: UserDTO) {
+    const { email, password } = data;
     return 'Signed in routed';
   }
 }

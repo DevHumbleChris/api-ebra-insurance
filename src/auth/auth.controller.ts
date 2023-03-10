@@ -1,13 +1,10 @@
-import { PrismaService } from './../../prisma/prisma.service';
-import { Controller, Post } from '@nestjs/common';
+import { UserDTO } from './../dto/user.dto';
+import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private prisma: PrismaService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('signup')
   async signup() {
@@ -15,7 +12,7 @@ export class AuthController {
   }
 
   @Post('signin')
-  async signin() {
-    return await this.authService.signin();
+  async signin(@Body() data: UserDTO) {
+    return await this.authService.signin(data);
   }
 }
