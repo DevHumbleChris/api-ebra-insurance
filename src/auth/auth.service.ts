@@ -2,7 +2,7 @@
 import { jwtSecret } from './../utils/constants';
 import { UserDTO } from './../dto/user.dto';
 import { PrismaService } from './../../prisma/prisma.service';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
@@ -24,14 +24,23 @@ export class AuthService {
     const hashedPassword = await this.hashPassword(password);
 
     // access token.
-    const accessToken = await this.signTokens({ email })
+    const accessToken = await this.signTokens({ email });
 
-    // todo: Create new user.
+    // Create new user.
+    const newUser = await this.createNewUser({
+      email,
+      password: hashedPassword,
+      accessToken,
+    });
 
     return {
-      hashedPassword,
-      accessToken,
-    }
+      user: {
+        email: newUser.email,
+        accessToken: newUser.accessToken
+      },
+      message: 'Signed up successfull!',
+      loggedIn: true
+    };
   }
 
   async signin(data: UserDTO) {
@@ -54,7 +63,20 @@ export class AuthService {
       throw new BadRequestException('Password is incorrect!');
     }
 
-    return 'Signed in routed';
+    const token = await this.signTokens({ email });
+
+    if (!token) {
+      throw new ForbiddenException()
+    }
+
+    return {
+      user: {
+        email: user.email,
+        accessToken:user.accessToken
+      },
+      message: 'Signed in successfull!',
+      loggedIn: true
+    };
   }
 
   // Get User By Email.
