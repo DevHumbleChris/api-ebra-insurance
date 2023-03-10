@@ -1,13 +1,15 @@
 /* eslint-disable prettier/prettier */
+import { jwtSecret } from './../utils/constants';
 import { UserDTO } from './../dto/user.dto';
 import { PrismaService } from './../../prisma/prisma.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private jwtService: JwtService) {}
   async signup(data: UserDTO) {
     const { email, password } = data;
 
@@ -21,9 +23,15 @@ export class AuthService {
     // Hashed Password.
     const hashedPassword = await this.hashPassword(password);
 
+    // access token.
+    const accessToken = await this.signTokens({ email })
+
     // todo: Create new user.
 
-    return hashedPassword;
+    return {
+      hashedPassword,
+      accessToken,
+    }
   }
 
   async signin(data: UserDTO) {
@@ -43,7 +51,7 @@ export class AuthService {
     });
 
     if (!isPasswordCorrect) {
-      throw new BadRequestException('Password is incorrect!')
+      throw new BadRequestException('Password is incorrect!');
     }
 
     return 'Signed in routed';
@@ -62,6 +70,16 @@ export class AuthService {
   async hashPassword(password): Promise<string> {
     const saltRounds = 10;
     return await bcrypt.hash(password, saltRounds);
+  }
+
+  // Sign Tokens.
+  async signTokens(args: { email: string }): Promise<string> {
+    return await this.jwtService.sign(
+      { email: args.email },
+      {
+        secret: jwtSecret,
+      },
+    );
   }
 
   // Check if password matches.
