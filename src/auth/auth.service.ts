@@ -2,11 +2,7 @@
 import { jwtSecret } from './../utils/constants';
 import { UserDTO } from './../dto/user.dto';
 import { PrismaService } from './../../prisma/prisma.service';
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
@@ -40,10 +36,10 @@ export class AuthService {
     return {
       user: {
         email: newUser.email,
-        accessToken: newUser.accessToken,
+        accessToken: newUser.accessToken
       },
       message: 'Signed up successfull!',
-      loggedIn: true,
+      loggedIn: true
     };
   }
 
@@ -70,16 +66,16 @@ export class AuthService {
     const token = await this.signTokens({ email });
 
     if (!token) {
-      throw new ForbiddenException();
+      throw new ForbiddenException()
     }
 
     return {
       user: {
         email: user.email,
-        accessToken: token,
+        accessToken:user.accessToken
       },
       message: 'Signed in successfull!',
-      loggedIn: true,
+      loggedIn: true
     };
   }
 
